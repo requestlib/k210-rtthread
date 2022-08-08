@@ -1,6 +1,9 @@
 #include<rtthread.h>
 #include<board.h>
 #include<sysctl.h>
+#include <clint.h>
+#include<entry.h>
+
 
 #define THREAD_PRIORITY 25
 #define THREAD_STACK_SIZE 1024
@@ -40,27 +43,10 @@ static void thread2_entry(void* param)
 int core1_function(void *ctx)
 {
     uint64_t core = current_coreid();
-    printf("Core %ld Hello world\n", core);
+    rt_kprintf("Core %ld Hello world\n", core);
     while(1);
 }
 
-// int hello(void)
-// {
-//     sysctl_pll_set_freq(SYSCTL_PLL0, 800000000);
-//     uint64_t core = current_coreid();
-//     int data;
-//     printf("Core %ld Hello world\n", core);
-//     register_core1(core1_function, NULL);
-
-//     /* Clear stdin buffer before scanf */
-//     sys_stdin_flush();
-
-//     scanf("%d", &data);
-//     printf("\nData is %d\n", data);
-//     while(1)
-//         continue;
-//     return 0;
-// }
 int main()
 {
 
@@ -79,10 +65,11 @@ int main()
     // return 0;
 
     uint64_t core = current_coreid();
-    printf("Core %ld Hello world\n", core);
-    register_core1(core1_function, NULL);
-
-    while(1)
-        continue;
+    rt_kprintf("Core %ld Hello world\n", core);
+    // rt_kprintf("%d tick ++\n",rt_hw_cpu_id());
+    // rt_hw_secondary_cpu_up();
+    // rt_kprintf("double cores tasks done!\n");
+    // while(1)
+    //     continue;
     return 0;
 }

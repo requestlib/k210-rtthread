@@ -68,12 +68,13 @@ void secondary_cpu_c_start(void)
 {
     rt_hw_spin_lock(&_cpus_lock);
 
-    /* initialize interrupt controller */
     rt_hw_scondary_interrupt_init();
 
     rt_hw_tick_init();
 
     rt_hw_clint_ipi_enable();
+
+    rt_application_init();
 
     rt_system_scheduler_start();
 }

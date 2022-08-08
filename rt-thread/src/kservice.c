@@ -1281,7 +1281,9 @@ RT_WEAK void rt_kprintf(const char *fmt, ...)
     }
     else
     {
+        rt_hw_spin_lock(&_cpus_lock);
         rt_device_write(_console_device, 0, rt_log_buf, length);
+        rt_hw_spin_unlock(&_cpus_lock);
     }
 #else
     rt_hw_console_output(rt_log_buf);
