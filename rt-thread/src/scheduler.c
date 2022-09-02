@@ -325,7 +325,7 @@ void rt_schedule(void)
         }
     }
 #endif /* RT_USING_SIGNALS */
-
+    // rt_kprintf("current thread lock nest: %d\n", current_thread->scheduler_lock_nest);
     if (current_thread->scheduler_lock_nest == 1) /* whether lock scheduler */
     {
         rt_ubase_t highest_ready_priority;

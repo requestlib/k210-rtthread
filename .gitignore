@@ -5,4 +5,4 @@ build/
 *.bin
 *.map
 *.o
-.dblite
+*.dblite
