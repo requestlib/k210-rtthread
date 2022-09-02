@@ -1281,12 +1281,12 @@ RT_WEAK void rt_kprintf(const char *fmt, ...)
     }
     else
     {
-        rt_spin_lock(&_cpus_lock);
+        rt_spin_lock(&_uart_lock);
         int core = current_coreid();
         char core_id[5] = {'[', '0'+core, ']',':',' '}; 
         rt_device_write(_console_device, 0, core_id, 5);
         rt_device_write(_console_device, 0, rt_log_buf, length);
-        rt_spin_unlock(&_cpus_lock);
+        rt_spin_unlock(&_uart_lock);
     }
 #else
     rt_hw_console_output(rt_log_buf);

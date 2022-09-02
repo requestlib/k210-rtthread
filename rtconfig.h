@@ -34,7 +34,7 @@
 #define RT_USING_EVENT
 #define RT_USING_MAILBOX
 #define RT_USING_MESSAGEQUEUE
-#define RT_USING_SIGNALS
+// #define RT_USING_SIGNALS
 /* end of Inter-Thread communication */
 
 /* Memory Management */

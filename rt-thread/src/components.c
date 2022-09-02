@@ -145,7 +145,7 @@ int $Sub$$main(void)
     return 0;
 }
 #elif defined(__ICCARM__)
-extern int main0(void);
+extern int main(void);
 /* __low_level_init will auto called by IAR cstartup */
 extern void __iar_data_init3(void);
 int __low_level_init(void)
@@ -264,6 +264,7 @@ int rtthread_startup(void)
 
 #ifdef RT_USING_SMP
     rt_hw_spin_lock(&_cpus_lock);
+    rt_hw_spin_lock(&_uart_lock);
 #endif /* RT_USING_SMP */
 
     /* start scheduler */

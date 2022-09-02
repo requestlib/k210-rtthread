@@ -13,6 +13,7 @@
 #ifdef RT_USING_SMP
 static struct rt_cpu _cpus[RT_CPUS_NR];
 rt_hw_spinlock_t _cpus_lock;
+rt_hw_spinlock_t _uart_lock;
 
 /*
  * disable scheduler
@@ -184,6 +185,7 @@ rt_base_t rt_cpus_lock(void)
         {
             pcpu->current_thread->scheduler_lock_nest++;
             rt_hw_spin_lock(&_cpus_lock);
+            rt_hw_spin_lock(&_uart_lock);
         }
     }
 
@@ -208,6 +210,7 @@ void rt_cpus_unlock(rt_base_t level)
         {
             pcpu->current_thread->scheduler_lock_nest--;
             rt_hw_spin_unlock(&_cpus_lock);
+            rt_hw_spin_unlock(&_uart_lock);
         }
     }
     rt_hw_local_irq_enable(level);
@@ -227,6 +230,7 @@ void rt_cpus_lock_status_restore(struct rt_thread *thread)
     if (!thread->cpus_lock_nest)
     {
         rt_hw_spin_unlock(&_cpus_lock);
+        rt_hw_spin_unlock(&_uart_lock);
     }
 }
 RTM_EXPORT(rt_cpus_lock_status_restore);
