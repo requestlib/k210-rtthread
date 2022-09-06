@@ -67,7 +67,6 @@ extern int rt_hw_clint_ipi_enable(void);
 void secondary_cpu_c_start(void)
 {
     rt_hw_spin_lock(&_cpus_lock);
-    rt_hw_spin_lock(&_uart_lock);
 
     rt_hw_scondary_interrupt_init();
 

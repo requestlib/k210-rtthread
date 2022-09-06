@@ -1,6 +1,8 @@
 //@brief: 测试系统性能
 //@date: 22/9/5
 #include<rtdef.h>
+#include<rtservice.h>
 
-void primary_cal_test(rt_uint64_t* src_array, int factorial_number); //简单测试计算性能函数
+double primary_cal_test(int cal_num); //简单测试计算性能函数
+// long list_thread(void);
 
