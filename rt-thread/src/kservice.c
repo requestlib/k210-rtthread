@@ -1282,9 +1282,9 @@ RT_WEAK void rt_kprintf(const char *fmt, ...)
     else
     {
         int level = rt_hw_local_irq_disable();
-        rt_hw_spin_lock(&_uart_lock);
+        rt_hw_spin_lock(&_cpus_lock);
         rt_device_write(_console_device, 0, rt_log_buf, length);
-        rt_hw_spin_unlock(&_uart_lock);
+        rt_hw_spin_unlock(&_cpus_lock);
         rt_hw_local_irq_enable(level);
     }
 #else

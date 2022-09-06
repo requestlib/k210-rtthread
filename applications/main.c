@@ -36,9 +36,11 @@ int main()
 
     tid1 = rt_thread_create("thread1", thread1_entry, RT_NULL, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
     if(tid1 != RT_NULL)
+        tid1->bind_cpu = 0;
         rt_thread_startup(tid1);
+    // rt_thread_control(tid1, RT_THREAD_CTRL_BIND_CPU, 0);
 
-    if(core == 1)list_thread();
+    // if(core == 1)list_thread();
 
     return 0;
 }

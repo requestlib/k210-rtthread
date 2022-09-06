@@ -155,7 +155,6 @@ void rt_hw_spin_unlock(rt_hw_spinlock_t *lock);
 int rt_hw_cpu_id(void);
 
 extern rt_hw_spinlock_t _cpus_lock;
-extern rt_hw_spinlock_t _uart_lock;
 extern rt_hw_spinlock_t _rt_critical_lock;
 
 #define __RT_HW_SPIN_LOCK_INITIALIZER(lockname) {0}
