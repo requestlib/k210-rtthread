@@ -6,3 +6,4 @@ build/
 *.map
 *.o
 *.dblite
+*.pyc

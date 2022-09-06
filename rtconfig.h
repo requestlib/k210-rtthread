@@ -14,6 +14,7 @@
 #define RT_TICK_PER_SECOND 1
 #define RT_USING_OVERFLOW_CHECK
 #define RT_USING_HOOK
+#define RT_PRINTF_LONGLONG
 #define RT_USING_IDLE_HOOK
 #define RT_IDLE_HOOK_LIST_SIZE 4
 #define IDLE_THREAD_STACK_SIZE 4096
@@ -170,7 +171,7 @@
 
 /* Utilities */
 
-#define RT_USING_ULOG
+// #define RT_USING_ULOG
 #define ULOG_OUTPUT_LVL_D
 #define ULOG_OUTPUT_LVL 7
 #define ULOG_ASSERT_ENABLE
