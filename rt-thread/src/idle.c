@@ -279,8 +279,6 @@ static void rt_thread_idle_entry(void *parameter)
     }
 #endif /* RT_USING_SMP */
 
-    while (1)
-    {
 #ifdef RT_USING_IDLE_HOOK
         rt_size_t i;
         void (*idle_hook)(void);
@@ -302,7 +300,7 @@ static void rt_thread_idle_entry(void *parameter)
 #ifdef RT_USING_PM
         rt_system_power_manager();
 #endif /* RT_USING_PM */
-    }
+    // }
 }
 
 #ifdef RT_USING_SMP

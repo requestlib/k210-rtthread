@@ -13,7 +13,16 @@
 #ifdef RT_USING_SMP
 static struct rt_cpu _cpus[RT_CPUS_NR];
 rt_hw_spinlock_t _cpus_lock;
-rt_hw_spinlock_t _uart_lock;
+
+#ifdef RT_CALCULATE_CPU_USAGE
+/*get cpu usage*/
+float get_cpu_usage(void){
+    rt_tick_t total = rt_cpu_self()->recent_total_ticks;
+    rt_tick_t work = rt_cpu_self()->recent_total_ticks - rt_cpu_self()->idle_ticks;
+    return 100.0 * work / total;
+}
+
+#endif
 
 /*
  * disable scheduler

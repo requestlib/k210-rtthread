@@ -84,7 +84,6 @@ void rt_timer_exit_sethook(void (*hook)(struct rt_timer *timer))
 /**@}*/
 #endif /* RT_USING_HOOK */
 
-
 /**
  * @brief [internal] The init funtion of timer
  *

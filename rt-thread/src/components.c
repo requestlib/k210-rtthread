@@ -186,7 +186,7 @@ void main_thread_entry(void *parameter)
 #endif /* RT_USING_COMPONENTS_INIT */
 
 #ifdef RT_USING_SMP
-    rt_hw_secondary_cpu_up();
+    // rt_hw_secondary_cpu_up();
 #endif /* RT_USING_SMP */
     /* invoke system main function */
 #ifdef __ARMCC_VERSION
@@ -222,6 +222,13 @@ void rt_application_init(void)
     /* if not define RT_USING_HEAP, using to eliminate the warning */
     (void)result;
 #endif /* RT_USING_HEAP */
+
+// #ifdef RT_CALCULATE_CPU_USAGE
+//     for(int i=0;i<RT_CPUS_NR;i++){
+//         rt_cpu_self()->recent_total_ticks[i]=0;
+//         _idle_ticks[i]=0;
+//     }
+// #endif
 
     rt_thread_startup(tid);
 }

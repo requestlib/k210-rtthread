@@ -15,7 +15,7 @@
 #define RT_USING_OVERFLOW_CHECK
 #define RT_USING_HOOK
 #define RT_PRINTF_LONGLONG
-#define RT_USING_IDLE_HOOK
+// #define RT_USING_IDLE_HOOK
 #define RT_IDLE_HOOK_LIST_SIZE 4
 #define IDLE_THREAD_STACK_SIZE 4096
 #define SYSTEM_THREAD_STACK_SIZE 4096
@@ -186,83 +186,6 @@
 /* end of log format */
 #define ULOG_BACKEND_USING_CONSOLE
 /* end of Utilities */
-/* end of RT-Thread Components */
-
-/* RT-Thread online packages */
-
-/* IoT - internet of things */
-
-
-/* Wi-Fi */
-
-/* Marvell WiFi */
-
-/* end of Marvell WiFi */
-
-/* Wiced WiFi */
-
-/* end of Wiced WiFi */
-/* end of Wi-Fi */
-
-/* IoT Cloud */
-
-/* end of IoT Cloud */
-/* end of IoT - internet of things */
-
-/* security packages */
-
-/* end of security packages */
-
-/* language packages */
-
-/* JSON: JavaScript Object Notation, a lightweight data-interchange format */
-
-/* end of JSON: JavaScript Object Notation, a lightweight data-interchange format */
-
-/* XML: Extensible Markup Language */
-
-/* end of XML: Extensible Markup Language */
-/* end of language packages */
-
-/* multimedia packages */
-
-/* LVGL: powerful and easy-to-use embedded GUI library */
-
-/* end of LVGL: powerful and easy-to-use embedded GUI library */
-
-/* u8g2: a monochrome graphic library */
-
-/* end of u8g2: a monochrome graphic library */
-
-/* PainterEngine: A cross-platform graphics application framework written in C language */
-
-/* end of PainterEngine: A cross-platform graphics application framework written in C language */
-/* end of multimedia packages */
-
-/* tools packages */
-
-/* end of tools packages */
-
-/* system packages */
-
-/* enhanced kernel services */
-
-/* end of enhanced kernel services */
-
-/* acceleration: Assembly language or algorithmic acceleration packages */
-
-/* end of acceleration: Assembly language or algorithmic acceleration packages */
-
-/* CMSIS: ARM Cortex-M Microcontroller Software Interface Standard */
-
-/* end of CMSIS: ARM Cortex-M Microcontroller Software Interface Standard */
-
-/* Micrium: Micrium software products porting for RT-Thread */
-
-/* end of Micrium: Micrium software products porting for RT-Thread */
-/* end of system packages */
-
-/* peripheral libraries and drivers */
 
 
 /* Kendryte SDK */
@@ -321,5 +244,9 @@
 /* end of Hardware Drivers Config */
 #define __STACKSIZE__ 4096
 #define RT_AI_USE_K210
+
+
+/* additional function by liweiran*/
+#define RT_CALCULATE_CPU_USAGE
 
 #endif

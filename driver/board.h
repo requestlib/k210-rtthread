@@ -27,7 +27,7 @@ extern unsigned int __bss_end;
 
 void rt_hw_board_init(void);
 
-void hardware_init(void);
+void led_hardware_init(void);
 void rgb_all_off(void);
 void rgb_all_on(void);
 void init_rgb(void);
