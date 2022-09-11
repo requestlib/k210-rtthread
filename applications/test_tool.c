@@ -1,4 +1,6 @@
 #include<test_tool.h>
+#include<rtthread.h>
+#include<rtdef.h>
 
 // 四则运算
 double primary_cal_test(int cal_num){
@@ -20,7 +22,7 @@ double primary_cal_test(int cal_num){
 }
 
 
-
+//展示所有线程状态
 long list_thread(void)
 {
     rt_ubase_t level;
@@ -36,7 +38,7 @@ long list_thread(void)
 
 #ifdef RT_USING_SMP
     rt_kprintf("%-*.s cpu bind pri  status      sp     stack size max used left tick  error\n", RT_NAME_MAX, item_title);
-    rt_kprintf(" --- ---- ---  ------- ---------- ----------  ------  ---------- ---\n");
+    rt_kprintf(" ---  ---- ---  ------- ---------- ----------  ------  ---------- ---\n");
 #else
     rt_kprintf("%-*.s pri  status      sp     stack size max used left tick  error\n", RT_NAME_MAX, item_title);
     rt_kprintf(" ---  ------- ---------- ----------  ------  ---------- ---\n");

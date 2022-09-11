@@ -829,3 +829,26 @@ void rt_system_timer_thread_init(void)
 }
 
 /**@}*/
+
+//展示所有定时器状态
+void list_timer(void){
+    rt_list_t *timer_list;
+    rt_list_t *timer_node_ptr;
+    rt_kprintf("name init timeout \n");
+    rt_kprintf(" ---  ---  ---- \n");
+
+    timer_list = &_timer_list[RT_TIMER_SKIP_LIST_LEVEL-1];
+    timer_node_ptr = timer_list;
+    for (; timer_node_ptr != timer_list->prev;
+            timer_node_ptr  = timer_node_ptr->next)
+    {
+        struct rt_timer *t;
+        rt_list_t *p = timer_node_ptr->next;
+
+        /* fix up the entry pointer */
+        t = rt_list_entry(p, struct rt_timer, row[RT_TIMER_SKIP_LIST_LEVEL-1]);
+        rt_kprintf("%-*.*s %3d %3d", RT_NAME_MAX, RT_NAME_MAX, (&t->parent)->name, t->init_tick, t->timeout_tick);
+       
+    }
+
+}

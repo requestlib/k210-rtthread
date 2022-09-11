@@ -6,62 +6,79 @@
 #include<encoding.h>
 #include<rthw.h>
 #include<test_tool.h>
-static rt_timer_t timer1;
-static rt_timer_t timer2;
-static rt_ubase_t cnt;
 
-/* 定时器1 超时函数*/
-static void timeout1(void *parameter)
+#define THREAD_PRIORITY 25
+#define THREAD_STACK_SIZE 1024
+#define THREAD_TIMESLICE 5
+static rt_thread_t tid1 = RT_NULL;
+static rt_thread_t tid_monitor = RT_NULL;
+static int para1 = 1;
+static int para2 = 2;
+
+/* 线程1 入口函数*/
+static void thread1_entry(void *parameter)
 {
-    rt_kprintf("periodic timer is timeout %d\n", cnt);
-    /*运行第十次 停止周期定时器*/
-    cnt ++;
-    cnt = cnt % 3;
-    switch (cnt)
-    {
-    case 0:
-    	gd_led_off(LED3);
-    	gd_led_on(LED1);
-        break;
-    case 1:
-    	gd_led_off(LED1);
-    	gd_led_on(LED2);
-        break;
-    case 2:
-    	gd_led_off(LED2);
-    	gd_led_on(LED3);
-        break;
-    
-    default:
-        break;
+    int cal_num = 80000;
+    while(1){
+        int wait_start = rt_cpu_self()->tick;
+        srand(wait_start);
+        rt_thread_delay(rand()%(1000*(*(int *)parameter)));
+        primary_cal_test(cal_num);
+        int end = rt_cpu_self()->tick;
+        // rt_kprintf("wait time:%d\n",end-wait_start);
+        switch((end-wait_start)%3){
+            case 0:
+                rgb_all_off();
+                led_b_on();
+                break;
+            case 1:
+                rgb_all_off();
+                led_r_on();
+                break;
+            case 2:
+                rgb_all_off();
+                led_g_on();
+                break;
+            default:
+                break;
+        }
     }
-    
+
+
 }
 
-/* 定时器2 超时函数*/
-static void timeout2(void *parameter)
-{
-    rt_kprintf("one shot timer is timeout \n");
+static void moniter_thread_entry(void *parameter){
+    int count=0;
+    while(1){
+        rt_thread_delay(3000);
+        for(int i=0;i<RT_CPUS_NR;i++){
+            rt_kprintf("cpu[%d] usage:",i);
+            rt_kprintf(" %d%%\n", (int)get_cpu_usage(i));
+            rt_kprintf("total_tick:%d, idle_tick:%d\n",rt_cpu_self()->recent_total_ticks,rt_cpu_self()->idle_ticks);
+        }
+        list_thread();
+    }
 }
 
-
-int timer_example()
+int main()
 {
-	rt_kprintf("hello main\n");
-	gd_led_init(LED1);
-	gd_led_init(LED2);
-	gd_led_init(LED3);
-	/* GPIO Config */
-
-    /* 创建定时器1 周期性定时器*/
-    timer1 = rt_timer_create("timer1", timeout1, RT_NULL, 100, RT_TIMER_FLAG_PERIODIC);
-    /* 启动定时器1 */
-    if(timer1 != RT_NULL)rt_timer_start(timer1);
-
-    /* 创建定时器2 单次定时器*/
-    timer2 = rt_timer_create("timer2", timeout2, RT_NULL, 30, RT_TIMER_FLAG_ONE_SHOT);
-    /* 启动定时器2 */
-    if(timer2 != RT_NULL)rt_timer_start(timer2);
-
+    int core = current_coreid();
+    rt_kprintf("Core %d Hello world \n", core);
+    if(core==0){
+        tid1 = rt_thread_create("thread1", thread1_entry, &para1, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
+        if(tid1 != RT_NULL){
+            tid1->bind_cpu = 0;
+            rt_thread_startup(tid1);
+        }
+        tid_monitor = rt_thread_create("monitor", moniter_thread_entry, RT_NULL, THREAD_STACK_SIZE*2, 30, THREAD_TIMESLICE);
+        if(tid_monitor != RT_NULL)
+            rt_thread_startup(tid_monitor);
+    }else{
+        tid1 = rt_thread_create("thread2", thread1_entry, &para2, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
+        if(tid1 != RT_NULL){
+            tid1->bind_cpu = 1;
+            rt_thread_startup(tid1);
+        }
+    }
     return 0;
 }
