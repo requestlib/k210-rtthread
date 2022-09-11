@@ -223,6 +223,13 @@ void rt_application_init(void)
     (void)result;
 #endif /* RT_USING_HEAP */
 
+// #ifdef RT_CALCULATE_CPU_USAGE
+//     for(int i=0;i<RT_CPUS_NR;i++){
+//         rt_cpu_self()->recent_total_ticks[i]=0;
+//         _idle_ticks[i]=0;
+//     }
+// #endif
+
     rt_thread_startup(tid);
 }
 

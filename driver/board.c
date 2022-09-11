@@ -114,6 +114,7 @@ void rt_hw_board_init(void)
 #ifdef RT_USING_COMPONENTS_INIT
     rt_components_board_init();
 #endif
+    init_rgb();
 }
 void rt_hw_cpu_reset(void)
 {
@@ -151,7 +152,7 @@ void rt_hw_us_delay(rt_uint32_t usec)
 * @retval        void
 * @par History   无
 */
-void hardware_init(void)
+void led_hardware_init(void)
 {
     /* fpioa映射 */
     fpioa_set_function(PIN_RGB_R, FUNC_RGB_R);
@@ -225,6 +226,7 @@ void led_b_on(void){
 */
 void init_rgb(void)
 {
+    led_hardware_init();
     /* 设置RGB灯的GPIO模式为输出 */
     gpiohs_set_drive_mode(RGB_R_GPIONUM, GPIO_DM_OUTPUT);
     gpiohs_set_drive_mode(RGB_G_GPIONUM, GPIO_DM_OUTPUT);

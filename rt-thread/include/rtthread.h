@@ -76,6 +76,7 @@ void rt_object_put_sethook(void (*hook)(struct rt_object *object));
 /*
  * clock & timer interface
  */
+void list_timer(void); //展示所有定时器状态
 rt_tick_t rt_tick_get(void);
 void rt_tick_set(rt_tick_t tick);
 void rt_tick_increase(void);
@@ -533,6 +534,10 @@ void rt_components_board_init(void);
 /*
  * general kernel service
  */
+#ifdef RT_CALCULATE_CPU_USAGE
+float get_cpu_usage(int core_id); /*get cpu usage*/
+#endif
+
 #ifndef RT_USING_CONSOLE
 #define rt_kprintf(...)
 #define rt_kputs(str)

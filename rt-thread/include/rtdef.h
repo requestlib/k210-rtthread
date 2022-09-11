@@ -592,6 +592,10 @@ struct rt_cpu
 #endif
 
     rt_tick_t tick;
+ #ifdef RT_CALCULATE_CPU_USAGE
+    rt_tick_t recent_total_ticks;
+    rt_tick_t idle_ticks;
+#endif   
 };
 
 #endif
