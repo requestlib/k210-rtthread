@@ -19,6 +19,7 @@ rt_hw_spinlock_t _cpus_lock;
 float get_cpu_usage(int core_id){
     rt_tick_t total = rt_cpu_index(core_id)->recent_total_ticks;
     rt_tick_t work = rt_cpu_index(core_id)->recent_total_ticks - rt_cpu_index(core_id)->idle_ticks;
+    if(total == 0) return 0.0;
     return 100.0 * work / total;
 }
 

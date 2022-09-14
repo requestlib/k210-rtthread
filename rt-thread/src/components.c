@@ -210,6 +210,7 @@ void rt_application_init(void)
 #ifdef RT_USING_HEAP
     tid = rt_thread_create("main", main_thread_entry, RT_NULL,
                            RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
+    tid->bind_cpu = rt_hw_cpu_id();
     RT_ASSERT(tid != RT_NULL);
 #else
     rt_err_t result;

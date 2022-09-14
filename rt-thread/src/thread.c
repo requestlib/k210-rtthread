@@ -104,6 +104,15 @@ static void _thread_exit(void)
 
     /* get current thread */
     thread = rt_thread_self();
+    // rt_kprintf("thread exit name:%s\n",thread->name);
+
+    // int level1 = rt_hw_local_irq_disable();
+    // rt_hw_spin_lock(&_cpus_lock);
+    // rt_device_write(_console_device, 0, rt_log_buf, length);
+    // rt_hw_spin_unlock(&_cpus_lock);
+    // rt_hw_local_irq_enable(level1);
+
+    // rt_kprintf("thread timer info:%d\n",rt_object_get_type(thread->type));
 
     /* disable interrupt */
     level = rt_hw_interrupt_disable();
@@ -339,6 +348,34 @@ rt_err_t rt_thread_startup(rt_thread_t thread)
     thread->number_mask = 1L << thread->current_priority;
 #endif /* RT_THREAD_PRIORITY_MAX > 32 */
 
+    // 根据负载情况绑定cpu
+    // float min_usage=999;
+    // rt_uint32_t dst_cpuid=0;
+    // for(int i=0;i<RT_CPUS_NR;i++){
+    //     float cur_usage = get_cpu_usage(i);
+    //     // rt_kprintf("get_cpu_usage: cpu[%d]: usage:%d\n",i,(int)cur_usage);
+    //     if(cur_usage<min_usage){
+    //         min_usage = cur_usage;
+    //         dst_cpuid = i;
+    //     }
+    // }
+    // //如果cpu都满载，则根据任务优先权重判断最容易得到调度的cpu
+    // if(min_usage>=99){
+    //    rt_uint32_t priority_weight=0xffffffff;
+    //    for(int i=0;i<RT_CPUS_NR;i++){
+    //         rt_uint32_t cur_weight = get_priority_weight(i);
+    //         if(cur_weight<priority_weight){
+    //             priority_weight = cur_weight;
+    //             dst_cpuid = i;
+    //         }
+    //     }
+    // }
+
+    // thread->bind_cpu = 0;
+    rt_kprintf("start up thread, bind cpu!!\n");
+    rt_kprintf("thread name:%s\n",thread->name);
+    list_thread();
+ 
     RT_DEBUG_LOG(RT_DEBUG_THREAD, ("startup a thread:%s with priority:%d\n",
                                    thread->name, thread->init_priority));
     /* change thread stat */
