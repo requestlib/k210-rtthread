@@ -460,7 +460,7 @@ rt_thread_t rt_thread_create(const char *name,
                     stack_size,
                     priority,
                     tick);
-
+    thread->bind_cpu=get_lowest_load_cpu();
     return thread;
 }
 RTM_EXPORT(rt_thread_create);
@@ -948,5 +948,32 @@ rt_thread_t rt_thread_find(char *name)
 }
 
 RTM_EXPORT(rt_thread_find);
+
+rt_uint32_t get_lowest_load_cpu(void)
+{
+    // 根据负载情况绑定cpu
+    float min_usage=999;
+    rt_uint32_t dst_cpuid=0;
+    for(int i=0;i<RT_CPUS_NR;i++){
+        float cur_usage = get_cpu_usage(i);
+        if(cur_usage<min_usage){
+            min_usage = cur_usage;
+            dst_cpuid = i;
+        }
+    }
+    //如果cpu都满载，则根据任务优先权重判断最容易得到调度的cpu
+    if(min_usage>=99){
+       rt_uint32_t priority_weight=0xffffffff;
+       for(int i=0;i<RT_CPUS_NR;i++){
+            rt_uint32_t cur_weight = get_priority_weight(i);
+            if(cur_weight<priority_weight){
+                priority_weight = cur_weight;
+                dst_cpuid = i;
+            }
+        }
+    }
+    return dst_cpuid;
+}
+    
 
 /**@}*/

@@ -359,6 +359,7 @@ void rt_thread_idle_init(void)
             RT_THREAD_PRIORITY_MAX - 2,
             32);
     /* startup */
+    rt_system_thread.bind_cpu = 0;
     rt_thread_startup(&rt_system_thread);
 #endif
 }

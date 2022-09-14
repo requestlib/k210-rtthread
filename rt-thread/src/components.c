@@ -211,6 +211,7 @@ void rt_application_init(void)
     tid = rt_thread_create("main", main_thread_entry, RT_NULL,
                            RT_MAIN_THREAD_STACK_SIZE, RT_MAIN_THREAD_PRIORITY, 20);
     RT_ASSERT(tid != RT_NULL);
+    tid->bind_cpu = rt_hw_cpu_id();
 #else
     rt_err_t result;
 

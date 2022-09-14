@@ -124,6 +124,7 @@ void rt_timer_exit_sethook(void (*hook)(struct rt_timer *timer));
 /*
  * thread interface
  */
+rt_uint32_t get_lowest_load_cpu(void);
 rt_err_t rt_thread_init(struct rt_thread *thread,
                         const char       *name,
                         void (*entry)(void *parameter),
@@ -189,6 +190,7 @@ void rt_schedule_remove_thread(struct rt_thread *thread);
 void rt_enter_critical(void);
 void rt_exit_critical(void);
 rt_uint16_t rt_critical_level(void);
+rt_uint32_t get_priority_weight(int core_id);
 
 #ifdef RT_USING_HOOK
 void rt_scheduler_sethook(void (*hook)(rt_thread_t from, rt_thread_t to));
