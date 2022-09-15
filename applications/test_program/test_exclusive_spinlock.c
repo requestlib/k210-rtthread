@@ -58,7 +58,7 @@ static void moniter_thread_entry(void *parameter){
     }
 }
 
-int main()
+int test()
 {
     int core = current_coreid();
     rt_kprintf("Core %d Hello world \n", core);

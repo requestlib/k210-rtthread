@@ -12,6 +12,17 @@
 
 #include "cpuport.h"
 
+/*
+ * int exclusive_read_write(int* lock, int new_num);
+ */
+    .global exclusive_read_write
+exclusive_read_write:
+retry:
+    lr.w a3, (a0)
+    bnez a3, retry
+    sc.w a3, a1, (a0)
+    bnez a3, retry
+
 #ifdef RT_USING_SMP
 #define rt_hw_interrupt_disable rt_hw_local_irq_disable
 #define rt_hw_interrupt_enable  rt_hw_local_irq_enable
