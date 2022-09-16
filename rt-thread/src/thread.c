@@ -187,7 +187,7 @@ static rt_err_t _thread_init(struct rt_thread *thread,
 
 #ifdef RT_USING_SMP
     /* not bind on any cpu */
-    thread->bind_cpu = RT_CPUS_NR;
+    thread->bind_cpu = get_lowest_load_cpu();
     thread->oncpu = RT_CPU_DETACHED;
 
     /* lock init */
@@ -460,7 +460,6 @@ rt_thread_t rt_thread_create(const char *name,
                     stack_size,
                     priority,
                     tick);
-    thread->bind_cpu=get_lowest_load_cpu();
     return thread;
 }
 RTM_EXPORT(rt_thread_create);

@@ -78,7 +78,7 @@ static void thread4_entry(void *parameter)
     for(int i=0;i<OP_NR_SEM;i++) rt_sem_release(dynamic_sem);
 }
 
-int main(void)
+int test_mailbox(void)
 {
     int core = current_coreid();
     // rt_kprintf("Core %d Hello world \n", core);

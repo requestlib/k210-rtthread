@@ -72,7 +72,7 @@ typedef struct _corelock
 
 static inline int spinlock_trylock(spinlock_t *lock)
 {
-    int res = atomic_swap(&lock->lock, 1);
+    int res = atomic_swap(&lock->lock, -1);
     /* Use memory barrier to keep coherency */
     mb();
     return res;

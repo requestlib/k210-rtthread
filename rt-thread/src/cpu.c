@@ -13,6 +13,7 @@
 #ifdef RT_USING_SMP
 static struct rt_cpu _cpus[RT_CPUS_NR];
 rt_hw_spinlock_t _cpus_lock;
+rt_hw_spinlock_t _uart_lock;
 
 #ifdef RT_CALCULATE_CPU_USAGE
 /*get cpu usage*/

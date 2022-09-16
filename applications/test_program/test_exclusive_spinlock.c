@@ -58,7 +58,7 @@ static void moniter_thread_entry(void *parameter){
     }
 }
 
-int test()
+int test_spinlock()
 {
     int core = current_coreid();
     rt_kprintf("Core %d Hello world \n", core);

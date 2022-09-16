@@ -337,6 +337,7 @@ void rt_thread_idle_init(void)
                 sizeof(rt_thread_stack[i]),
                 RT_THREAD_PRIORITY_MAX - 1,
                 32);
+        idle[i].bind_cpu=i;
 #ifdef RT_USING_SMP
         rt_thread_control(&idle[i], RT_THREAD_CTRL_BIND_CPU, (void*)i);
 #endif /* RT_USING_SMP */

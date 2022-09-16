@@ -25,6 +25,7 @@
 #include <rtdef.h>
 #include <rtservice.h>
 #include <rtm.h>
+#include <board.h>
 
 #ifdef __cplusplus
 extern "C" {
