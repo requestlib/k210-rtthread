@@ -18,7 +18,7 @@ static void thread1_entry(void *parameter)
 }
 
 
-int main(void)
+int test_mcycle(void)
 {
     int core = current_coreid();
     rt_kprintf("Core %d Hello world \n", core);

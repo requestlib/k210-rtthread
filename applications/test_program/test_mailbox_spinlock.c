@@ -43,8 +43,7 @@ static void thread1_entry(void *parameter)
 
     }
     int end = read_cycle();
-    rt_kprintf("total msg received from mailbox:%d\n",count);
-    rt_kprintf("total spent time mailbox:%d\n",end-start);
+    rt_kprintf("mailbox:%d\n",end-start);
     rt_mb_detach(&mb1);
 }
 
@@ -61,7 +60,8 @@ static void thread2_entry(void *parameter)
         number++;
     }
     int end = read_cycle();
-    rt_kprintf("total spent time sem:%d\n",end-start);
+    rt_kprintf("sem:%d\n",end-start);
+    while(1);
 }
 
 
@@ -76,22 +76,23 @@ static void thread3_entry(void *parameter)
 static void thread4_entry(void *parameter)
 {
     for(int i=0;i<OP_NR_SEM;i++) rt_sem_release(dynamic_sem);
+    while(1);
 }
 
-int test_mailbox(void)
+int test_spinlock_mail(void)
 {
     int core = current_coreid();
-    // rt_kprintf("Core %d Hello world \n", core);
-    if(core==0){
+    rt_kprintf("Core %d Hello world \n", core);
+    if(core==1){
         rt_err_t result = rt_mb_init(&mb1,"mbt1",&mb_pool1[0],sizeof(mb_pool1) / 4, RT_IPC_FLAG_FIFO);   //初始化邮箱1 
 
         //thread1
         rt_thread_init(&thread1,"thread1",thread1_entry,RT_NULL,&thread1_stack[0],sizeof(thread1_stack),THREAD_PRIORITY, THREAD_TIMESLICE);
-        thread1.bind_cpu=0;
+        thread1.bind_cpu=1;
         rt_thread_startup(&thread1);
 
         rt_thread_init(&thread3,"thread3",thread3_entry,RT_NULL,&thread3_stack[0],sizeof(thread3_stack),THREAD_PRIORITY, THREAD_TIMESLICE);
-        thread3.bind_cpu=0;
+        thread3.bind_cpu=1;
         rt_thread_startup(&thread3);
 
     }else{
@@ -99,11 +100,11 @@ int test_mailbox(void)
         dynamic_sem = rt_sem_create("dsem", 0, RT_IPC_FLAG_PRIO);
 
         rt_thread_init(&thread2,"thread2",thread2_entry,RT_NULL,&thread2_stack[0],sizeof(thread2_stack),THREAD_PRIORITY, THREAD_TIMESLICE);
-        thread2.bind_cpu=1;
+        thread2.bind_cpu=0;
         rt_thread_startup(&thread2);
 
         rt_thread_init(&thread4,"thread4",thread4_entry,RT_NULL,&thread4_stack[0],sizeof(thread4_stack),THREAD_PRIORITY, THREAD_TIMESLICE);
-        thread4.bind_cpu=1;
+        thread4.bind_cpu=0;
         rt_thread_startup(&thread4);
 
 

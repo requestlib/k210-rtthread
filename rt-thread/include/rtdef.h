@@ -43,6 +43,8 @@
 
 /* include rtconfig header to import configuration */
 #include <rtconfig.h>
+#include <atomic.h>
+// #include <rthw.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -710,7 +712,7 @@ typedef struct rt_thread *rt_thread_t;
 struct rt_ipc_object
 {
     struct rt_object parent;                            /**< inherit from rt_object */
-
+    spinlock_t       spin_lock;
     rt_list_t        suspend_thread;                    /**< threads pended on this resource */
 };
 

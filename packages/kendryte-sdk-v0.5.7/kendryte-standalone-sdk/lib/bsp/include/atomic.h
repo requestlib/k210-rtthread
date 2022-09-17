@@ -80,9 +80,9 @@ static inline int spinlock_trylock(spinlock_t *lock)
 
 static inline void spinlock_lock(spinlock_t *lock)
 {
-    while(spinlock_trylock(lock));
+    // while(spinlock_trylock(lock));
     // 使用互斥读写指令获取自旋锁
-    // exclusive_read_write(&lock->lock, 1);
+    exclusive_read_write(&lock->lock, 1);
 }
 
 static inline void spinlock_unlock(spinlock_t *lock)
