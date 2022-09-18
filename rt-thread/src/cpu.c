@@ -25,7 +25,6 @@ float get_cpu_usage(int core_id){
 }
 
 #endif
-
 /*
  * disable scheduler
  */
@@ -97,7 +96,8 @@ void rt_spin_lock_init(rt_spinlock *lock)
  */
 void rt_spin_lock(rt_spinlock *lock)
 {
-    exclusive_read_write(&lock->lock, 1);
+    exclusive_read_write(&(lock->lock), 1);
+    // while(spinlock_trylock((spinlock_t *)lock));
 }
 
 

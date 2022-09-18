@@ -425,10 +425,11 @@ rt_thread_t rt_thread_defunct_dequeue(void);
  * spinlock
  */
 #ifdef RT_USING_SMP
-
-typedef struct {
+void exclusive_read_write(int* lock, int new_num);
+struct spinlock{
     int lock;
-} rt_spinlock;
+};
+typedef struct spinlock rt_spinlock;
 
 int rt_spin_lock_irqsave(rt_spinlock *lock);
 void rt_spin_unlock_irqrestore(rt_spinlock *lock, int level);

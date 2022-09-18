@@ -49,7 +49,6 @@ extern "C" {
 #define atomic_or(ptr, inc) __sync_fetch_and_or(ptr, inc)
 #define atomic_swap(ptr, swp) __sync_lock_test_and_set(ptr, swp)
 #define atomic_cas(ptr, cmp, swp) __sync_val_compare_and_swap(ptr, cmp, swp)
-void exclusive_read_write(int* lock, int new_num);
 
 typedef struct _spinlock
 {
@@ -80,9 +79,9 @@ static inline int spinlock_trylock(spinlock_t *lock)
 
 static inline void spinlock_lock(spinlock_t *lock)
 {
-    // while(spinlock_trylock(lock));
+    while(spinlock_trylock(lock));
     // 使用互斥读写指令获取自旋锁
-    exclusive_read_write(&lock->lock, 1);
+    // exclusive_read_write(&lock->lock, 1);
 }
 
 static inline void spinlock_unlock(spinlock_t *lock)

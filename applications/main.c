@@ -21,9 +21,11 @@ static rt_spinlock test_spinlock;
 static void thread1_entry(void *parameter)
 {
     //长时间保持自旋锁
+    int level = rt_hw_local_irq_disable();
     rt_spin_lock(&test_spinlock);
     primary_cal_test(10000*500);  //9s
     rt_spin_unlock(&test_spinlock);
+    rt_hw_local_irq_enable(level);
 }
 
 static void thread2_entry(void *parameter)
@@ -32,6 +34,7 @@ static void thread2_entry(void *parameter)
     // rt_spin_unlock(&_cpus_lock, level);
     // rt_kprintf("hh\n");
     led_r_on();
+    list_timer();
     while(1);
 }
 
@@ -57,12 +60,13 @@ int main()
 
     }else{
         start = rt_cpu_self()->tick;
-        tid2 = rt_thread_create("thread2", thread2_entry, RT_NULL, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
+        tid2 = rt_thread_create("thread2", thread2_entry, RT_NULL, THREAD_STACK_SIZE*2, THREAD_PRIORITY, THREAD_TIMESLICE);
         if(tid2 != RT_NULL){
             tid2->bind_cpu=1;
             rt_thread_startup(tid2);
         }
-        rt_thread_delay(1000); //1秒后 高优先级线程到来
+        rt_thread_delay(100); //1秒后 高优先级线程到来
+        led_b_on();
         tid3 = rt_thread_create("thread3", thread3_entry, RT_NULL, THREAD_STACK_SIZE, THREAD_PRIORITY-5, THREAD_TIMESLICE);
         if(tid3 != RT_NULL){
             tid3->bind_cpu=1;

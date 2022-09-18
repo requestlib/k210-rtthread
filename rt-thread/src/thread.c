@@ -558,6 +558,7 @@ rt_err_t rt_thread_sleep(rt_tick_t tick)
 
     /* disable interrupt */
     temp = rt_hw_interrupt_disable();
+    // temp = rt_hw_local_irq_disable();
 
     /* suspend thread */
     rt_thread_suspend(thread);
@@ -568,6 +569,7 @@ rt_err_t rt_thread_sleep(rt_tick_t tick)
 
     /* enable interrupt */
     rt_hw_interrupt_enable(temp);
+    // rt_hw_local_irq_enable(temp);
 
     rt_schedule();
 
