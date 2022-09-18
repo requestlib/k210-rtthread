@@ -29,7 +29,7 @@ static void thread2_entry(void *parameter)
 }
 
 
-int main(void)
+int test_ipi(void)
 {
     int core = current_coreid();
     rt_kprintf("Core %d Hello world \n", core);

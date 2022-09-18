@@ -318,10 +318,18 @@ uintptr_t handle_trap(uintptr_t mcause, uintptr_t epc, uintptr_t * sp)
         {
             case IRQ_M_SOFT:
                 {
-                    uint64_t core_id = current_coreid();
-
-                    clint_ipi_clear(core_id);
-                    rt_schedule();
+                    struct rt_cpu* self_cpu=rt_cpu_self();
+                    switch (self_cpu->ipi_type)
+                    {
+                    case IPI_CALL_FUNC:
+                        self_cpu->ipi_func(self_cpu->param);
+                        break;
+                    case IPI_RESCHEDULE:
+                        rt_schedule();
+                    default:
+                        break;
+                    }
+                    clint_ipi_clear(rt_hw_cpu_id()); 
                 }
                 break;
             case IRQ_M_EXT:

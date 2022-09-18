@@ -14,6 +14,7 @@
 
 #include <rthw.h>
 #include <rtthread.h>
+#include <rtdef.h>
 
 #ifdef RT_USING_HOOK
 
@@ -131,3 +132,69 @@ RTM_EXPORT(rt_hw_interrupt_enable);
 
 /**@}*/
 
+/**
+ * ipi - inner process interrupt
+ * 
+ * mcause:
+ *  IPI_RESCHEDULE ：control all cores to run rt_schedule()
+    IPI_CALL_FUNC： control one core to run specific function.
+*/
+
+/**
+ * @brief trigger an ipi interrupt
+ * 
+ * @param ipi_cause: which kind of ipi interrupt
+ * @param func: run function on specific core
+ * @param param: function parameters
+ */
+void trigger_ipi_irq(ipi_irq_t ipi_irq, rt_uint8_t dest_core_id){
+
+    switch (ipi_irq->ipi_type)
+    {
+    case IPI_CALL_FUNC:
+        if(dest_core_id>=RT_CPUS_NR){ //all cpu ipi
+            for(int i=0;i<RT_CPUS_NR;i++){
+                struct rt_cpu *dest_cpu = rt_cpu_index(dest_core_id);
+                dest_cpu->ipi_type=IPI_CALL_FUNC;
+                dest_cpu->ipi_func=ipi_irq->func;
+                dest_cpu->param=ipi_irq->parameter;
+                clint_ipi_send(i);
+            }
+        }
+        else{
+            for(int i=0;i<RT_CPUS_NR;i++){
+                if(i==dest_core_id){
+                    struct rt_cpu *dest_cpu = rt_cpu_index(dest_core_id);
+                    dest_cpu->ipi_type=IPI_CALL_FUNC;
+                    dest_cpu->ipi_func=ipi_irq->func;
+                    dest_cpu->param=ipi_irq->parameter;
+                    clint_ipi_send(dest_core_id);
+                }
+                else rt_cpu_index(i)->ipi_type=RT_NULL;
+            }
+        }
+        break;
+    case IPI_RESCHEDULE:
+        if(dest_core_id>=RT_CPUS_NR){ //all cpu ipi
+            for(int i=0;i<RT_CPUS_NR;i++){
+                struct rt_cpu *dest_cpu = rt_cpu_index(dest_core_id);
+                dest_cpu->ipi_type=IPI_RESCHEDULE;
+                clint_ipi_send(i);
+            }
+        }
+        else{
+            for(int i=0;i<RT_CPUS_NR;i++){
+                if(i==dest_core_id){
+                    struct rt_cpu *dest_cpu = rt_cpu_index(dest_core_id);
+                    dest_cpu->ipi_type=IPI_RESCHEDULE;
+                    clint_ipi_send(dest_core_id);
+                }
+                else rt_cpu_index(i)->ipi_type=RT_NULL;
+            }
+        }
+        break;
+    default:
+        break;
+    }
+
+}

@@ -504,13 +504,22 @@ void rt_interrupt_leave(void);
 /*
  * smp cpus lock service
  */
-
+#define IPI_RESCHEDULE 0x1
+#define IPI_CALL_FUNC 0x2
+static rt_uint8_t ipi_type;
+static void (*ipi_func)(void);
 rt_base_t rt_cpus_lock(void);
 void rt_cpus_unlock(rt_base_t level);
 
 struct rt_cpu *rt_cpu_self(void);
 struct rt_cpu *rt_cpu_index(int index);
-
+struct ipi_irq{
+    rt_uint8_t ipi_type;
+    void (*func)(void *parameter);
+    void *parameter;
+};
+typedef struct ipi_irq* ipi_irq_t;
+void trigger_ipi_irq(ipi_irq_t ipi_irq, rt_uint8_t dest_core_id);
 #endif
 
 /*
