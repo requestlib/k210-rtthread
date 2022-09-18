@@ -12,8 +12,8 @@
 
 #ifdef RT_USING_SMP
 static struct rt_cpu _cpus[RT_CPUS_NR];
-rt_hw_spinlock_t _cpus_lock;
-rt_hw_spinlock_t _uart_lock;
+rt_spinlock _cpus_lock;
+rt_spinlock _uart_lock;
 
 #ifdef RT_CALCULATE_CPU_USAGE
 /*get cpu usage*/
@@ -82,11 +82,10 @@ static void _cpu_preempt_enable(void)
  *
  * @param   lock is a pointer to the spinlock to initialize.
  */
-void rt_spin_lock_init(struct rt_spinlock *lock)
+void rt_spin_lock_init(rt_spinlock *lock)
 {
-    rt_hw_spin_lock_init(&lock->lock);
+    lock->lock = 0;
 }
-RTM_EXPORT(rt_spin_lock_init)
 
 /**
  * @brief   This function will lock the spinlock.
@@ -96,24 +95,25 @@ RTM_EXPORT(rt_spin_lock_init)
  *
  * @param   lock is a pointer to the spinlock.
  */
-void rt_spin_lock(struct rt_spinlock *lock)
+void rt_spin_lock(rt_spinlock *lock)
 {
-    _cpu_preempt_disable();
-    rt_hw_spin_lock(&lock->lock);
+    exclusive_read_write(&lock->lock, 1);
 }
-RTM_EXPORT(rt_spin_lock)
+
 
 /**
  * @brief   This function will unlock the spinlock.
  *
  * @param   lock is a pointer to the spinlock.
  */
-void rt_spin_unlock(struct rt_spinlock *lock)
+void rt_spin_unlock(rt_spinlock *lock)
 {
-    rt_hw_spin_unlock(&lock->lock);
-    _cpu_preempt_enable();
+    /* Use memory barrier to keep coherency */
+    mb();
+    atomic_set(&lock->lock, 0);
+    asm volatile("nop");
 }
-RTM_EXPORT(rt_spin_unlock)
+
 
 /**
  * @brief   This function will disable the local interrupt and then lock the spinlock.
@@ -125,15 +125,12 @@ RTM_EXPORT(rt_spin_unlock)
  *
  * @return  Return current cpu interrupt status.
  */
-rt_base_t rt_spin_lock_irqsave(struct rt_spinlock *lock)
+
+int rt_spin_lock_irqsave(rt_spinlock *lock)
 {
-    unsigned long level;
-
-    _cpu_preempt_disable();
-
-    level = rt_hw_local_irq_disable();
-    rt_hw_spin_lock(&lock->lock);
-
+    int level = rt_hw_local_irq_disable();
+    // _cpu_preempt_disable();
+    rt_spin_lock(lock);
     return level;
 }
 RTM_EXPORT(rt_spin_lock_irqsave)
@@ -145,12 +142,12 @@ RTM_EXPORT(rt_spin_lock_irqsave)
  *
  * @param   level is interrupt status returned by rt_spin_lock_irqsave().
  */
-void rt_spin_unlock_irqrestore(struct rt_spinlock *lock, rt_base_t level)
+void rt_spin_unlock_irqrestore(rt_spinlock *lock, int level)
 {
-    rt_hw_spin_unlock(&lock->lock);
+    rt_spin_unlock(lock);
     rt_hw_local_irq_enable(level);
 
-    _cpu_preempt_enable();
+    // _cpu_preempt_enable();
 }
 RTM_EXPORT(rt_spin_unlock_irqrestore)
 
@@ -195,7 +192,7 @@ rt_base_t rt_cpus_lock(void)
         if (lock_nest == 0)
         {
             pcpu->current_thread->scheduler_lock_nest++;
-            rt_hw_spin_lock(&_cpus_lock);
+            rt_spin_lock(&_cpus_lock);
         }
     }
 
@@ -219,7 +216,7 @@ void rt_cpus_unlock(rt_base_t level)
         if (pcpu->current_thread->cpus_lock_nest == 0)
         {
             pcpu->current_thread->scheduler_lock_nest--;
-            rt_hw_spin_unlock(&_cpus_lock);
+            rt_spin_unlock(&_cpus_lock);
         }
     }
     rt_hw_local_irq_enable(level);
@@ -238,7 +235,7 @@ void rt_cpus_lock_status_restore(struct rt_thread *thread)
     pcpu->current_thread = thread;
     if (!thread->cpus_lock_nest)
     {
-        rt_hw_spin_unlock(&_cpus_lock);
+        rt_spin_unlock(&_cpus_lock);
     }
 }
 RTM_EXPORT(rt_cpus_lock_status_restore);

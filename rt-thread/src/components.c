@@ -245,7 +245,6 @@ int rtthread_startup(void)
     /* board level initialization
      * NOTE: please initialize heap inside board initialization.
      */
-    // rt_hw_spin_lock_init(&_uart_lock);
     rt_hw_board_init();
 
     /* show RT-Thread version */
@@ -272,7 +271,7 @@ int rtthread_startup(void)
     rt_thread_idle_init();
 
 #ifdef RT_USING_SMP
-    rt_hw_spin_lock(&_cpus_lock);
+    // rt_spin_lock(&_cpus_lock);
 #endif /* RT_USING_SMP */
 
     /* start scheduler */

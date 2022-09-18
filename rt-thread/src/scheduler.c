@@ -871,7 +871,7 @@ void rt_enter_critical(void)
         if (lock_nest == 0)
         {
             current_thread->scheduler_lock_nest ++;
-            rt_hw_spin_lock(&_cpus_lock);
+            rt_spin_lock(&_cpus_lock);
         }
     }
     /* critical for local cpu */
@@ -930,7 +930,7 @@ void rt_exit_critical(void)
     if (current_thread->cpus_lock_nest == 0)
     {
         current_thread->scheduler_lock_nest --;
-        rt_hw_spin_unlock(&_cpus_lock);
+        rt_spin_unlock(&_cpus_lock);
     }
 
     if (current_thread->scheduler_lock_nest <= 0)

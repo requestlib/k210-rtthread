@@ -26,9 +26,9 @@ _pthread_data_t *_pthread_get_data(pthread_t thread)
 
     if (thread >= PTHREAD_NUM_MAX) return NULL;
 
-    rt_hw_spin_lock(&pth_lock);
+    rt_base_t level = rt_spin_lock(&pth_lock);
     ptd = pth_table[thread];
-    rt_hw_spin_unlock(&pth_lock);
+    rt_spin_unlock(&pth_lock, level);
 
     if (ptd && ptd->magic == PTHREAD_MAGIC) return ptd;
 
@@ -40,12 +40,12 @@ pthread_t _pthread_data_get_pth(_pthread_data_t *ptd)
     int index;
     RT_DECLARE_SPINLOCK(pth_lock);
 
-    rt_hw_spin_lock(&pth_lock);
+    rt_spin_lock(&pth_lock);
     for (index = 0; index < PTHREAD_NUM_MAX; index ++)
     {
         if (pth_table[index] == ptd) break;
     }
-    rt_hw_spin_unlock(&pth_lock);
+    rt_spin_unlock(&pth_lock);
 
     return index;
 }
@@ -65,7 +65,7 @@ pthread_t _pthread_data_create(void)
     ptd->canceltype = PTHREAD_CANCEL_DEFERRED;
     ptd->magic = PTHREAD_MAGIC;
 
-    rt_hw_spin_lock(&pth_lock);
+    rt_base_t level = rt_spin_lock(&pth_lock);
     for (index = 0; index < PTHREAD_NUM_MAX; index ++)
     {
         if (pth_table[index] == NULL)
@@ -74,7 +74,7 @@ pthread_t _pthread_data_create(void)
             break;
         }
     }
-    rt_hw_spin_unlock(&pth_lock);
+    rt_spin_unlock(&pth_lock, level);
 
     /* full of pthreads, clean magic and release ptd */
     if (index == PTHREAD_NUM_MAX)
@@ -115,9 +115,9 @@ void _pthread_data_destroy(pthread_t pth)
         }
 
         /* remove from pthread table */
-        rt_hw_spin_lock(&pth_lock);
+        rt_base_t level = rt_spin_lock(&pth_lock);
         pth_table[pth] = NULL;
-        rt_hw_spin_unlock(&pth_lock);
+        rt_spin_unlock(&pth_lock, level);
 
         /* delete joinable semaphore */
         if (ptd->joinable_sem != RT_NULL)

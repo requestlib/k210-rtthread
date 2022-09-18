@@ -10,7 +10,7 @@
  * 2006-09-24     Bernard      add rt_hw_context_switch_to declaration
  * 2012-12-29     Bernard      add rt_hw_exception_install declaration
  * 2017-10-17     Hichard      add some micros
- * 2018-11-17     Jesven       add rt_hw_spinlock_t
+ * 2018-11-17     Jesven       add rt_spinlock
  *                             add smp support
  */
 
@@ -100,6 +100,8 @@ void rt_hw_local_irq_enable(rt_base_t level);
 
 #define rt_hw_interrupt_disable rt_cpus_lock
 #define rt_hw_interrupt_enable rt_cpus_unlock
+// #define rt_hw_interrupt_disable rt_hw_local_irq_disable
+// #define rt_hw_interrupt_enable rt_hw_local_irq_enable
 
 #else
 rt_base_t rt_hw_interrupt_disable(void);
@@ -135,35 +137,15 @@ void rt_hw_exception_install(rt_err_t (*exception_handle)(void *context));
 void rt_hw_us_delay(rt_uint32_t us);
 
 #ifdef RT_USING_SMP
-typedef union {
-    unsigned long slock;
-    struct __arch_tickets {
-        unsigned short owner;
-        unsigned short next;
-    } tickets;
-} rt_hw_spinlock_t;
-
-struct rt_spinlock
-{
-    rt_hw_spinlock_t lock;
-};
-
-void rt_hw_spin_lock_init(rt_hw_spinlock_t *lock);
-void rt_hw_spin_lock(rt_hw_spinlock_t *lock);
-void rt_hw_spin_unlock(rt_hw_spinlock_t *lock);
 
 int rt_hw_cpu_id(void);
-
-extern rt_hw_spinlock_t _cpus_lock;
-extern rt_hw_spinlock_t _uart_lock;
-extern rt_hw_spinlock_t _rt_critical_lock;
 
 #define __RT_HW_SPIN_LOCK_INITIALIZER(lockname) {0}
 
 #define __RT_HW_SPIN_LOCK_UNLOCKED(lockname)    \
-    (rt_hw_spinlock_t) __RT_HW_SPIN_LOCK_INITIALIZER(lockname)
+    (rt_spinlock) __RT_HW_SPIN_LOCK_INITIALIZER(lockname)
 
-#define RT_DEFINE_SPINLOCK(x)  rt_hw_spinlock_t x = __RT_HW_SPIN_LOCK_UNLOCKED(x)
+#define RT_DEFINE_SPINLOCK(x)  rt_spinlock x = __RT_HW_SPIN_LOCK_UNLOCKED(x)
 #define RT_DECLARE_SPINLOCK(x)
 
 /**
@@ -185,8 +167,8 @@ void rt_hw_secondary_cpu_idle_exec(void);
 #define RT_DEFINE_SPINLOCK(x)
 #define RT_DECLARE_SPINLOCK(x)    rt_ubase_t x
 
-#define rt_hw_spin_lock(lock)     *(lock) = rt_hw_interrupt_disable()
-#define rt_hw_spin_unlock(lock)   rt_hw_interrupt_enable(*(lock))
+#define rt_spin_lock(lock)     *(lock) = rt_hw_interrupt_disable()
+#define rt_spin_unlock(lock)   rt_hw_interrupt_enable(*(lock))
 
 #endif
 

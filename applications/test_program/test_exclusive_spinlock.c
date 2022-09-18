@@ -20,10 +20,8 @@ rt_uint32_t op_number = 0;
 static void thread1_entry(void *parameter)
 {
     while(1){
-       int level = rt_hw_local_irq_disable();
-       rt_hw_spin_lock(&_cpus_lock);    //获取自旋锁
-       rt_hw_spin_unlock(&_cpus_lock); // 释放自旋锁
-       rt_hw_local_irq_enable(level);
+       rt_spin_lock(&_cpus_lock);    //获取自旋锁
+       rt_spin_unlock(&_cpus_lock); // 释放自旋锁
     }
 }
 

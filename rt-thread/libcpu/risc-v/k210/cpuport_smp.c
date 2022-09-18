@@ -25,21 +25,6 @@ int rt_hw_cpu_id(void)
     return read_csr(mhartid);
 }
 
-void rt_hw_spin_lock_init(rt_hw_spinlock_t *lock)
-{
-    ((spinlock_t *)lock)->lock = 0;
-}
-
-void rt_hw_spin_lock(rt_hw_spinlock_t *lock)
-{
-    spinlock_lock((spinlock_t *)lock);
-}
-
-void rt_hw_spin_unlock(rt_hw_spinlock_t *lock)
-{
-    spinlock_unlock((spinlock_t *)lock);
-}
-
 void rt_hw_ipi_send(int ipi_vector, unsigned int cpu_mask)
 {
     int idx;
@@ -66,7 +51,7 @@ extern int rt_hw_clint_ipi_enable(void);
 
 void secondary_cpu_c_start(void)
 {
-    rt_hw_spin_lock(&_cpus_lock);
+    // rt_spin_lock(&_cpus_lock);
 
     rt_hw_scondary_interrupt_init();
 
