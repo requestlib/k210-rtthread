@@ -925,7 +925,9 @@ rt_err_t rt_mutex_take(rt_mutex_t mutex, rt_int32_t time)
     thread = rt_thread_self();
 
     /* disable interrupt */
-    temp = rt_hw_interrupt_disable();
+    // temp = rt_hw_interrupt_disable();
+    temp = rt_hw_local_irq_disable();
+    spinlock_lock(&mutex->parent.spin_lock);
 
     RT_OBJECT_HOOK_CALL(rt_object_trytake_hook, (&(mutex->parent.parent)));
 
@@ -945,7 +947,9 @@ rt_err_t rt_mutex_take(rt_mutex_t mutex, rt_int32_t time)
         }
         else
         {
-            rt_hw_interrupt_enable(temp); /* enable interrupt */
+            // rt_hw_interrupt_enable(temp); /* enable interrupt */
+            spinlock_unlock(&mutex->parent.spin_lock);
+            rt_hw_local_irq_enable(temp);
             return -RT_EFULL; /* value overflowed */
         }
     }
@@ -971,7 +975,9 @@ __again:
             }
             else
             {
-                rt_hw_interrupt_enable(temp); /* enable interrupt */
+                // rt_hw_interrupt_enable(temp); /* enable interrupt */
+                spinlock_unlock(&mutex->parent.spin_lock);
+                rt_hw_local_irq_enable(temp);
                 return -RT_EFULL; /* value overflowed */
             }
         }
@@ -984,7 +990,9 @@ __again:
                 thread->error = -RT_ETIMEOUT;
 
                 /* enable interrupt */
-                rt_hw_interrupt_enable(temp);
+                // rt_hw_interrupt_enable(temp);
+                spinlock_unlock(&mutex->parent.spin_lock);
+                rt_hw_local_irq_enable(temp);
 
                 return -RT_ETIMEOUT;
             }
@@ -1023,7 +1031,9 @@ __again:
                 }
 
                 /* enable interrupt */
-                rt_hw_interrupt_enable(temp);
+                // rt_hw_interrupt_enable(temp);
+                spinlock_unlock(&mutex->parent.spin_lock);
+                rt_hw_local_irq_enable(temp);
 
                 /* do schedule */
                 rt_schedule();
@@ -1042,14 +1052,19 @@ __again:
                 {
                     /* the mutex is taken successfully. */
                     /* disable interrupt */
-                    temp = rt_hw_interrupt_disable();
+                    // temp = rt_hw_interrupt_disable();
+                    temp = rt_hw_local_irq_disable();
+                    spinlock_lock(&mutex->parent.spin_lock);
                 }
             }
         }
     }
 
     /* enable interrupt */
-    rt_hw_interrupt_enable(temp);
+    // rt_hw_interrupt_enable(temp);
+    
+    spinlock_unlock(&mutex->parent.spin_lock);
+    rt_hw_local_irq_enable(temp);
 
     RT_OBJECT_HOOK_CALL(rt_object_take_hook, (&(mutex->parent.parent)));
 
@@ -1111,7 +1126,9 @@ rt_err_t rt_mutex_release(rt_mutex_t mutex)
     thread = rt_thread_self();
 
     /* disable interrupt */
-    temp = rt_hw_interrupt_disable();
+    // temp = rt_hw_interrupt_disable();
+    temp = rt_hw_local_irq_disable();
+    spinlock_lock(&mutex->parent.spin_lock);
 
     RT_DEBUG_LOG(RT_DEBUG_IPC,
                  ("mutex_release:current thread %s, mutex value: %d, hold: %d\n",
@@ -1125,7 +1142,9 @@ rt_err_t rt_mutex_release(rt_mutex_t mutex)
         thread->error = -RT_ERROR;
 
         /* enable interrupt */
-        rt_hw_interrupt_enable(temp);
+        // rt_hw_interrupt_enable(temp);
+        spinlock_unlock(&mutex->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
 
         return -RT_ERROR;
     }
@@ -1164,7 +1183,9 @@ rt_err_t rt_mutex_release(rt_mutex_t mutex)
             }
             else
             {
-                rt_hw_interrupt_enable(temp); /* enable interrupt */
+                // rt_hw_interrupt_enable(temp); /* enable interrupt */
+                spinlock_unlock(&mutex->parent.spin_lock);
+                rt_hw_local_irq_enable(temp);
                 return -RT_EFULL; /* value overflowed */
             }
 
@@ -1182,7 +1203,9 @@ rt_err_t rt_mutex_release(rt_mutex_t mutex)
             }
             else
             {
-                rt_hw_interrupt_enable(temp); /* enable interrupt */
+                // rt_hw_interrupt_enable(temp); /* enable interrupt */
+                spinlock_unlock(&mutex->parent.spin_lock);
+                rt_hw_local_irq_enable(temp);
                 return -RT_EFULL; /* value overflowed */
             }
 
@@ -1193,7 +1216,9 @@ rt_err_t rt_mutex_release(rt_mutex_t mutex)
     }
 
     /* enable interrupt */
-    rt_hw_interrupt_enable(temp);
+    // rt_hw_interrupt_enable(temp);
+    spinlock_unlock(&mutex->parent.spin_lock);
+    rt_hw_local_irq_enable(temp);
 
     /* perform a schedule */
     if (need_schedule == RT_TRUE)
@@ -1460,7 +1485,9 @@ rt_err_t rt_event_send(rt_event_t event, rt_uint32_t set)
     need_schedule = RT_FALSE;
 
     /* disable interrupt */
-    level = rt_hw_interrupt_disable();
+    // level = rt_hw_interrupt_disable();
+    level = rt_hw_local_irq_disable();
+    spinlock_lock(&event->parent.spin_lock);
 
     /* set event */
     event->set |= set;
@@ -1499,7 +1526,9 @@ rt_err_t rt_event_send(rt_event_t event, rt_uint32_t set)
             else
             {
                 /* enable interrupt */
-                rt_hw_interrupt_enable(level);
+                // rt_hw_interrupt_enable(level);
+                spinlock_unlock(&event->parent.spin_lock);
+                rt_hw_local_irq_enable(level);
 
                 return -RT_EINVAL;
             }
@@ -1524,7 +1553,9 @@ rt_err_t rt_event_send(rt_event_t event, rt_uint32_t set)
     }
 
     /* enable interrupt */
-    rt_hw_interrupt_enable(level);
+    // rt_hw_interrupt_enable(level);
+    spinlock_unlock(&event->parent.spin_lock);
+    rt_hw_local_irq_enable(level);
 
     /* do a schedule */
     if (need_schedule == RT_TRUE)
@@ -1596,7 +1627,9 @@ rt_err_t rt_event_recv(rt_event_t   event,
     RT_OBJECT_HOOK_CALL(rt_object_trytake_hook, (&(event->parent.parent)));
 
     /* disable interrupt */
-    level = rt_hw_interrupt_disable();
+    // level = rt_hw_interrupt_disable();
+    level = rt_hw_local_irq_disable();
+    spinlock_lock(&event->parent.spin_lock);
 
     /* check event set */
     if (option & RT_EVENT_FLAG_AND)
@@ -1635,7 +1668,9 @@ rt_err_t rt_event_recv(rt_event_t   event,
         thread->error = -RT_ETIMEOUT;
 
         /* enable interrupt */
-        rt_hw_interrupt_enable(level);
+        // rt_hw_interrupt_enable(level);
+        spinlock_unlock(&event->parent.spin_lock);
+        rt_hw_local_irq_enable(level);
 
         return -RT_ETIMEOUT;
     }
@@ -1661,7 +1696,9 @@ rt_err_t rt_event_recv(rt_event_t   event,
         }
 
         /* enable interrupt */
-        rt_hw_interrupt_enable(level);
+        // rt_hw_interrupt_enable(level);
+        spinlock_unlock(&event->parent.spin_lock);
+        rt_hw_local_irq_enable(level);
 
         /* do a schedule */
         rt_schedule();
@@ -1673,7 +1710,9 @@ rt_err_t rt_event_recv(rt_event_t   event,
         }
 
         /* received an event, disable interrupt to protect */
-        level = rt_hw_interrupt_disable();
+        // level = rt_hw_interrupt_disable();
+        spinlock_unlock(&event->parent.spin_lock);
+        rt_hw_local_irq_enable(level);
 
         /* set received event */
         if (recved)
@@ -1681,7 +1720,9 @@ rt_err_t rt_event_recv(rt_event_t   event,
     }
 
     /* enable interrupt */
-    rt_hw_interrupt_enable(level);
+    // rt_hw_interrupt_enable(level);
+    spinlock_unlock(&event->parent.spin_lock);
+    rt_hw_local_irq_enable(level);
 
     RT_OBJECT_HOOK_CALL(rt_object_take_hook, (&(event->parent.parent)));
 
@@ -2190,11 +2231,15 @@ rt_err_t rt_mb_urgent(rt_mailbox_t mb, rt_ubase_t value)
     RT_OBJECT_HOOK_CALL(rt_object_put_hook, (&(mb->parent.parent)));
 
     /* disable interrupt */
-    temp = rt_hw_interrupt_disable();
+    // temp = rt_hw_interrupt_disable();
+    temp = rt_hw_local_irq_disable();
+    spinlock_lock(&mb->parent.spin_lock);
 
     if (mb->entry == mb->size)
     {
-        rt_hw_interrupt_enable(temp);
+        // rt_hw_interrupt_enable(temp);
+        spinlock_unlock(&mb->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
         return -RT_EFULL;
     }
 
@@ -2220,7 +2265,9 @@ rt_err_t rt_mb_urgent(rt_mailbox_t mb, rt_ubase_t value)
         _ipc_list_resume(&(mb->parent.suspend_thread));
 
         /* enable interrupt */
-        rt_hw_interrupt_enable(temp);
+        // rt_hw_interrupt_enable(temp);
+        spinlock_unlock(&mb->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
 
         rt_schedule();
 
@@ -2228,7 +2275,9 @@ rt_err_t rt_mb_urgent(rt_mailbox_t mb, rt_ubase_t value)
     }
 
     /* enable interrupt */
-    rt_hw_interrupt_enable(temp);
+    // rt_hw_interrupt_enable(temp);
+    spinlock_unlock(&mb->parent.spin_lock);
+    rt_hw_local_irq_enable(temp);
 
     return RT_EOK;
 }
@@ -2797,7 +2846,9 @@ rt_err_t rt_mq_send_wait(rt_mq_t     mq,
     RT_OBJECT_HOOK_CALL(rt_object_put_hook, (&(mq->parent.parent)));
 
     /* disable interrupt */
-    temp = rt_hw_interrupt_disable();
+    // temp = rt_hw_interrupt_disable();
+    temp = rt_hw_local_irq_disable();
+    spinlock_lock(&mq->parent.spin_lock);
 
     /* get a free list, there must be an empty item */
     msg = (struct rt_mq_message *)mq->msg_queue_free;
@@ -2805,7 +2856,9 @@ rt_err_t rt_mq_send_wait(rt_mq_t     mq,
     if (msg == RT_NULL && timeout == 0)
     {
         /* enable interrupt */
-        rt_hw_interrupt_enable(temp);
+        // rt_hw_interrupt_enable(temp);
+        spinlock_unlock(&mq->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
 
         return -RT_EFULL;
     }
@@ -2820,7 +2873,9 @@ rt_err_t rt_mq_send_wait(rt_mq_t     mq,
         if (timeout == 0)
         {
             /* enable interrupt */
-            rt_hw_interrupt_enable(temp);
+            // rt_hw_interrupt_enable(temp);
+            spinlock_unlock(&mq->parent.spin_lock);
+            rt_hw_local_irq_enable(temp);
 
             return -RT_EFULL;
         }
@@ -2848,7 +2903,9 @@ rt_err_t rt_mq_send_wait(rt_mq_t     mq,
         }
 
         /* enable interrupt */
-        rt_hw_interrupt_enable(temp);
+        // rt_hw_interrupt_enable(temp);
+        spinlock_unlock(&mq->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
 
         /* re-schedule */
         rt_schedule();
@@ -2861,7 +2918,9 @@ rt_err_t rt_mq_send_wait(rt_mq_t     mq,
         }
 
         /* disable interrupt */
-        temp = rt_hw_interrupt_disable();
+        // temp = rt_hw_interrupt_disable();
+        temp = rt_hw_local_irq_disable();
+        spinlock_lock(&mq->parent.spin_lock);
 
         /* if it's not waiting forever and then re-calculate timeout tick */
         if (timeout > 0)
@@ -2877,7 +2936,9 @@ rt_err_t rt_mq_send_wait(rt_mq_t     mq,
     mq->msg_queue_free = msg->next;
 
     /* enable interrupt */
-    rt_hw_interrupt_enable(temp);
+    // rt_hw_interrupt_enable(temp);
+    spinlock_unlock(&mq->parent.spin_lock);
+    rt_hw_local_irq_enable(temp);
 
     /* the msg is the new tailer of list, the next shall be NULL */
     msg->next = RT_NULL;
@@ -2885,7 +2946,9 @@ rt_err_t rt_mq_send_wait(rt_mq_t     mq,
     rt_memcpy(msg + 1, buffer, size);
 
     /* disable interrupt */
-    temp = rt_hw_interrupt_disable();
+    // temp = rt_hw_interrupt_disable();
+    temp = rt_hw_local_irq_disable();
+    spinlock_lock(&mq->parent.spin_lock);
     /* link msg to message queue */
     if (mq->msg_queue_tail != RT_NULL)
     {
@@ -2906,7 +2969,9 @@ rt_err_t rt_mq_send_wait(rt_mq_t     mq,
     }
     else
     {
-        rt_hw_interrupt_enable(temp); /* enable interrupt */
+        // rt_hw_interrupt_enable(temp); /* enable interrupt */
+        spinlock_unlock(&mq->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
         return -RT_EFULL; /* value overflowed */
     }
 
@@ -2916,7 +2981,9 @@ rt_err_t rt_mq_send_wait(rt_mq_t     mq,
         _ipc_list_resume(&(mq->parent.suspend_thread));
 
         /* enable interrupt */
-        rt_hw_interrupt_enable(temp);
+        // rt_hw_interrupt_enable(temp);
+        spinlock_unlock(&mq->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
 
         rt_schedule();
 
@@ -2924,7 +2991,9 @@ rt_err_t rt_mq_send_wait(rt_mq_t     mq,
     }
 
     /* enable interrupt */
-    rt_hw_interrupt_enable(temp);
+    // rt_hw_interrupt_enable(temp);
+    spinlock_unlock(&mq->parent.spin_lock);
+    rt_hw_local_irq_enable(temp);
 
     return RT_EOK;
 }
@@ -2996,7 +3065,9 @@ rt_err_t rt_mq_urgent(rt_mq_t mq, const void *buffer, rt_size_t size)
     RT_OBJECT_HOOK_CALL(rt_object_put_hook, (&(mq->parent.parent)));
 
     /* disable interrupt */
-    temp = rt_hw_interrupt_disable();
+    // temp = rt_hw_interrupt_disable();
+    temp = rt_hw_local_irq_disable();
+    spinlock_lock(&mq->parent.spin_lock);
 
     /* get a free list, there must be an empty item */
     msg = (struct rt_mq_message *)mq->msg_queue_free;
@@ -3004,7 +3075,9 @@ rt_err_t rt_mq_urgent(rt_mq_t mq, const void *buffer, rt_size_t size)
     if (msg == RT_NULL)
     {
         /* enable interrupt */
-        rt_hw_interrupt_enable(temp);
+        // rt_hw_interrupt_enable(temp);
+        spinlock_unlock(&mq->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
 
         return -RT_EFULL;
     }
@@ -3012,13 +3085,17 @@ rt_err_t rt_mq_urgent(rt_mq_t mq, const void *buffer, rt_size_t size)
     mq->msg_queue_free = msg->next;
 
     /* enable interrupt */
-    rt_hw_interrupt_enable(temp);
+    // rt_hw_interrupt_enable(temp);
+    spinlock_unlock(&mq->parent.spin_lock);
+    rt_hw_local_irq_enable(temp);
 
     /* copy buffer */
     rt_memcpy(msg + 1, buffer, size);
 
     /* disable interrupt */
-    temp = rt_hw_interrupt_disable();
+    // temp = rt_hw_interrupt_disable();
+    temp = rt_hw_local_irq_disable();
+    spinlock_lock(&mq->parent.spin_lock);
 
     /* link msg to the beginning of message queue */
     msg->next = (struct rt_mq_message *)mq->msg_queue_head;
@@ -3035,7 +3112,9 @@ rt_err_t rt_mq_urgent(rt_mq_t mq, const void *buffer, rt_size_t size)
     }
     else
     {
-        rt_hw_interrupt_enable(temp); /* enable interrupt */
+        // rt_hw_interrupt_enable(temp); /* enable interrupt */
+        spinlock_unlock(&mq->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
         return -RT_EFULL; /* value overflowed */
     }
 
@@ -3045,7 +3124,9 @@ rt_err_t rt_mq_urgent(rt_mq_t mq, const void *buffer, rt_size_t size)
         _ipc_list_resume(&(mq->parent.suspend_thread));
 
         /* enable interrupt */
-        rt_hw_interrupt_enable(temp);
+        // rt_hw_interrupt_enable(temp);
+        spinlock_unlock(&mq->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
 
         rt_schedule();
 
@@ -3053,7 +3134,9 @@ rt_err_t rt_mq_urgent(rt_mq_t mq, const void *buffer, rt_size_t size)
     }
 
     /* enable interrupt */
-    rt_hw_interrupt_enable(temp);
+    // rt_hw_interrupt_enable(temp);
+    spinlock_unlock(&mq->parent.spin_lock);
+    rt_hw_local_irq_enable(temp);
 
     return RT_EOK;
 }
@@ -3102,12 +3185,16 @@ rt_err_t rt_mq_recv(rt_mq_t    mq,
     RT_OBJECT_HOOK_CALL(rt_object_trytake_hook, (&(mq->parent.parent)));
 
     /* disable interrupt */
-    temp = rt_hw_interrupt_disable();
+    // temp = rt_hw_interrupt_disable();
+    temp = rt_hw_local_irq_disable();
+    spinlock_lock(&mq->parent.spin_lock);
 
     /* for non-blocking call */
     if (mq->entry == 0 && timeout == 0)
     {
-        rt_hw_interrupt_enable(temp);
+        // rt_hw_interrupt_enable(temp);
+        spinlock_unlock(&mq->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
 
         return -RT_ETIMEOUT;
     }
@@ -3124,7 +3211,9 @@ rt_err_t rt_mq_recv(rt_mq_t    mq,
         if (timeout == 0)
         {
             /* enable interrupt */
-            rt_hw_interrupt_enable(temp);
+            // rt_hw_interrupt_enable(temp);
+            spinlock_unlock(&mq->parent.spin_lock);
+            rt_hw_local_irq_enable(temp);
 
             thread->error = -RT_ETIMEOUT;
 
@@ -3153,7 +3242,9 @@ rt_err_t rt_mq_recv(rt_mq_t    mq,
         }
 
         /* enable interrupt */
-        rt_hw_interrupt_enable(temp);
+        // rt_hw_interrupt_enable(temp);
+        spinlock_unlock(&mq->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
 
         /* re-schedule */
         rt_schedule();
@@ -3166,7 +3257,9 @@ rt_err_t rt_mq_recv(rt_mq_t    mq,
         }
 
         /* disable interrupt */
-        temp = rt_hw_interrupt_disable();
+        // temp = rt_hw_interrupt_disable();
+        temp = rt_hw_local_irq_disable();
+        spinlock_lock(&mq->parent.spin_lock);
 
         /* if it's not waiting forever and then re-calculate timeout tick */
         if (timeout > 0)
@@ -3194,13 +3287,17 @@ rt_err_t rt_mq_recv(rt_mq_t    mq,
     }
 
     /* enable interrupt */
-    rt_hw_interrupt_enable(temp);
+    // rt_hw_interrupt_enable(temp);
+    spinlock_unlock(&mq->parent.spin_lock);
+    rt_hw_local_irq_enable(temp);
 
     /* copy message */
     rt_memcpy(buffer, msg + 1, size > mq->msg_size ? mq->msg_size : size);
 
     /* disable interrupt */
-    temp = rt_hw_interrupt_disable();
+    // temp = rt_hw_interrupt_disable();
+    temp = rt_hw_local_irq_disable();
+    spinlock_lock(&mq->parent.spin_lock);
     /* put message to free list */
     msg->next = (struct rt_mq_message *)mq->msg_queue_free;
     mq->msg_queue_free = msg;
@@ -3211,7 +3308,9 @@ rt_err_t rt_mq_recv(rt_mq_t    mq,
         _ipc_list_resume(&(mq->suspend_sender_thread));
 
         /* enable interrupt */
-        rt_hw_interrupt_enable(temp);
+        // rt_hw_interrupt_enable(temp);
+        spinlock_unlock(&mq->parent.spin_lock);
+        rt_hw_local_irq_enable(temp);
 
         RT_OBJECT_HOOK_CALL(rt_object_take_hook, (&(mq->parent.parent)));
 
@@ -3221,7 +3320,9 @@ rt_err_t rt_mq_recv(rt_mq_t    mq,
     }
 
     /* enable interrupt */
-    rt_hw_interrupt_enable(temp);
+    // rt_hw_interrupt_enable(temp);
+    spinlock_unlock(&mq->parent.spin_lock);
+    rt_hw_local_irq_enable(temp);
 
     RT_OBJECT_HOOK_CALL(rt_object_take_hook, (&(mq->parent.parent)));
 
