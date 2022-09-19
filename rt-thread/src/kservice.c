@@ -1281,14 +1281,9 @@ RT_WEAK void rt_kprintf(const char *fmt, ...)
     }
     else
     {
-        // int level = rt_spin_lock_irqsave(&_uart_lock);
-        int level = rt_hw_local_irq_disable();
-        rt_spin_lock(&_uart_lock);
-        rt_device_write(_console_device, 0, rt_log_buf, length);
-        rt_spin_unlock(&_uart_lock);
-        rt_hw_local_irq_enable(level);
-    
-        // rt_spin_unlock_irqrestore(&_uart_lock, level);
+        int level = rt_spin_lock(&_uart_lock);
+        rt_kputs(rt_log_buf);
+        rt_spin_unlock(&_uart_lock, level);
     }
 #else
     rt_hw_console_output(rt_log_buf);

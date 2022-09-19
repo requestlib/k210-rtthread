@@ -834,6 +834,7 @@ void rt_system_timer_thread_init(void)
 void list_timer(void){
     rt_list_t *timer_list;
     rt_list_t *timer_node_ptr;
+    int level = rt_spin_lock(&_cpus_lock);
     rt_kprintf("name init timeout \n");
     rt_kprintf(" ---  ---  ---- \n");
 
@@ -850,5 +851,6 @@ void list_timer(void){
         rt_kprintf("%-*.*s %3d %3d", RT_NAME_MAX, RT_NAME_MAX, (&t->parent)->name, t->init_tick, t->timeout_tick);
        
     }
+    rt_spin_unlock(&_cpus_lock, level);
 
 }

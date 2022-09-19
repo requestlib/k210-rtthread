@@ -94,10 +94,13 @@ void rt_spin_lock_init(rt_spinlock *lock)
  *
  * @param   lock is a pointer to the spinlock.
  */
-void rt_spin_lock(rt_spinlock *lock)
+int rt_spin_lock(rt_spinlock *lock)
 {
-    exclusive_read_write(&(lock->lock), 1);
-    // while(spinlock_trylock((spinlock_t *)lock));
+    if(lock->owner != rt_thread_self())
+        exclusive_read_write(&(lock->lock), 1);
+    int level = rt_hw_local_irq_disable();
+    lock->owner = rt_thread_self();
+    return level;
 }
 
 
@@ -106,50 +109,16 @@ void rt_spin_lock(rt_spinlock *lock)
  *
  * @param   lock is a pointer to the spinlock.
  */
-void rt_spin_unlock(rt_spinlock *lock)
+void rt_spin_unlock(rt_spinlock *lock, int level)
 {
     /* Use memory barrier to keep coherency */
     mb();
     atomic_set(&lock->lock, 0);
     asm volatile("nop");
-}
-
-
-/**
- * @brief   This function will disable the local interrupt and then lock the spinlock.
- *
- * @note    If the spinlock is locked, the current CPU will keep polling the spinlock state
- *          until the spinlock is unlocked.
- *
- * @param   lock is a pointer to the spinlock.
- *
- * @return  Return current cpu interrupt status.
- */
-
-int rt_spin_lock_irqsave(rt_spinlock *lock)
-{
-    int level = rt_hw_local_irq_disable();
-    // _cpu_preempt_disable();
-    rt_spin_lock(lock);
-    return level;
-}
-RTM_EXPORT(rt_spin_lock_irqsave)
-
-/**
- * @brief   This function will unlock the spinlock and then restore current cpu interrupt status.
- *
- * @param   lock is a pointer to the spinlock.
- *
- * @param   level is interrupt status returned by rt_spin_lock_irqsave().
- */
-void rt_spin_unlock_irqrestore(rt_spinlock *lock, int level)
-{
-    rt_spin_unlock(lock);
+    lock->owner=RT_NULL;
     rt_hw_local_irq_enable(level);
-
-    // _cpu_preempt_enable();
 }
-RTM_EXPORT(rt_spin_unlock_irqrestore)
+
 
 /**
  * @brief   This fucntion will return current cpu object.
@@ -192,7 +161,6 @@ rt_base_t rt_cpus_lock(void)
         if (lock_nest == 0)
         {
             pcpu->current_thread->scheduler_lock_nest++;
-            rt_spin_lock(&_cpus_lock);
         }
     }
 
@@ -216,7 +184,6 @@ void rt_cpus_unlock(rt_base_t level)
         if (pcpu->current_thread->cpus_lock_nest == 0)
         {
             pcpu->current_thread->scheduler_lock_nest--;
-            rt_spin_unlock(&_cpus_lock);
         }
     }
     rt_hw_local_irq_enable(level);
@@ -235,7 +202,7 @@ void rt_cpus_lock_status_restore(struct rt_thread *thread)
     pcpu->current_thread = thread;
     if (!thread->cpus_lock_nest)
     {
-        rt_spin_unlock(&_cpus_lock);
+        rt_spin_unlock(&_cpus_lock,RT_NULL);
     }
 }
 RTM_EXPORT(rt_cpus_lock_status_restore);

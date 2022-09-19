@@ -308,6 +308,7 @@ void rt_schedule(void)
     current_thread = pcpu->current_thread;
 
     /* whether do switch in interrupt */
+    // rt_kprintf("cpu[%d] current sche irq_nest:%d\n",rt_hw_cpu_id(),pcpu->irq_nest);
     if (pcpu->irq_nest)
     {
         pcpu->irq_switch_flag = 1;
@@ -326,7 +327,8 @@ void rt_schedule(void)
         }
     }
 #endif /* RT_USING_SIGNALS */
-    // rt_kprintf("current thread lock nest: %d\n", current_thread->scheduler_lock_nest);
+    // if(cpu_id == 0)
+    // rt_kprintf("thread[%s] lock nest: %d\n",current_thread->name, current_thread->scheduler_lock_nest);
     if (current_thread->scheduler_lock_nest == 1) /* whether lock scheduler */
     {
         rt_ubase_t highest_ready_priority;
@@ -930,7 +932,7 @@ void rt_exit_critical(void)
     if (current_thread->cpus_lock_nest == 0)
     {
         current_thread->scheduler_lock_nest --;
-        rt_spin_unlock(&_cpus_lock);
+        rt_spin_unlock(&_cpus_lock, level);
     }
 
     if (current_thread->scheduler_lock_nest <= 0)

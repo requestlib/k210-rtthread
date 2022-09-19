@@ -42,7 +42,7 @@ static void thread3_entry(void *parameter)
     rt_kprintf("thread3 total spent time:%d\n",end-start);
 }
 
-int main()
+int spin()
 {
     rt_thread_delay(5);
     int core = rt_hw_cpu_id();

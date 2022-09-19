@@ -40,7 +40,11 @@ static volatile rt_tick_t rt_tick = 0;
 rt_tick_t rt_tick_get(void)
 {
     /* return the global tick */
+#ifdef RT_USING_SMP
+    return rt_cpu_self()->tick;
+#else
     return rt_tick;
+#endif
 }
 RTM_EXPORT(rt_tick_get);
 

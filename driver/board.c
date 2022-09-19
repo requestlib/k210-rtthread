@@ -115,6 +115,7 @@ void rt_hw_board_init(void)
     rt_components_board_init();
 #endif
     init_rgb();
+    rt_spin_lock_init(&_uart_lock);
 }
 void rt_hw_cpu_reset(void)
 {

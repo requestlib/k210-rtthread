@@ -428,6 +428,7 @@ rt_thread_t rt_thread_defunct_dequeue(void);
 void exclusive_read_write(int* lock, int new_num);
 struct spinlock{
     int lock;
+    rt_thread_t owner;
 };
 typedef struct spinlock rt_spinlock;
 
@@ -439,8 +440,8 @@ extern rt_spinlock _uart_lock;
 extern rt_spinlock _rt_critical_lock;
 
 void rt_spin_lock_init(rt_spinlock *lock);
-void rt_spin_lock(rt_spinlock *lock);
-void rt_spin_unlock(rt_spinlock *lock);
+int rt_spin_lock(rt_spinlock *lock);
+void rt_spin_unlock(rt_spinlock *lock, int level);
 
 #else
 #define rt_spin_lock_init(lock)                 /* nothing */

@@ -25,7 +25,6 @@ double primary_cal_test(int cal_num){
 //展示所有线程状态
 long list_thread(void)
 {
-    rt_ubase_t level;
     rt_list_t *next_node = (rt_list_t *)RT_NULL;
     const char *item_title = "thread";
     struct rt_object_information *info;
@@ -35,7 +34,7 @@ long list_thread(void)
     list_head = &info->object_list;
     next_node = list_head->next;
 
-
+    int level = rt_spin_lock(&_cpus_lock);
 #ifdef RT_USING_SMP
     rt_kprintf("%-*.s cpu bind pri  status      sp     stack size max used left tick  error\n", RT_NAME_MAX, item_title);
     rt_kprintf(" ---  ---- ---  ------- ---------- ----------  ------  ---------- ---\n");
@@ -50,15 +49,12 @@ long list_thread(void)
         struct rt_thread thread_info, *thread;
 
         obj = rt_list_entry(next_node, struct rt_object, list);
-        level = rt_hw_local_irq_disable();
         if ((obj->type & ~RT_Object_Class_Static) != RT_Object_Class_Thread)
         {
-            rt_hw_local_irq_enable(level);
             continue;
         }
         /* copy info */
         rt_memcpy(&thread_info, obj, sizeof thread_info);
-        rt_hw_local_irq_enable(level);
 
         thread = (struct rt_thread *)obj;
         rt_uint8_t stat;
@@ -93,6 +89,6 @@ long list_thread(void)
 
         next_node = next_node->next;
     }
-
+    rt_spin_unlock(&_cpus_lock, level);
     return 0;
 }
