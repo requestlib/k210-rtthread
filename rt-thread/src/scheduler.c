@@ -674,20 +674,6 @@ void rt_schedule_insert_thread(struct rt_thread *thread)
     bind_cpu = thread->bind_cpu ;
 
     /* insert thread to ready list */
-//     if (bind_cpu == RT_CPUS_NR)
-//     {
-// #if RT_THREAD_PRIORITY_MAX > 32
-//         rt_thread_ready_table[thread->number] |= thread->high_mask;
-// #endif /* RT_THREAD_PRIORITY_MAX > 32 */
-//         rt_thread_ready_priority_group |= thread->number_mask;
-
-//         rt_list_insert_before(&(rt_thread_priority_table[thread->current_priority]),
-//                               &(thread->tlist));
-//         cpu_mask = RT_CPU_MASK ^ (1 << cpu_id);
-//         rt_hw_ipi_send(RT_SCHEDULE_IPI, cpu_mask);
-//     }
-//     else
-//     {
     struct rt_cpu *pcpu = rt_cpu_index(bind_cpu);
 
 #if RT_THREAD_PRIORITY_MAX > 32
@@ -700,10 +686,10 @@ void rt_schedule_insert_thread(struct rt_thread *thread)
 
     if (cpu_id != bind_cpu)
     {
-        cpu_mask = 1 << bind_cpu;
-        rt_hw_ipi_send(RT_SCHEDULE_IPI, cpu_mask);
+        struct ipi_irq ipi;
+        ipi.ipi_type = IPI_RESCHEDULE;
+        trigger_ipi_irq(&ipi, bind_cpu);
     }
-    // }
 
     RT_DEBUG_LOG(RT_DEBUG_SCHEDULER, ("insert thread[%.*s], the priority: %d\n",
                                       RT_NAME_MAX, thread->name, thread->current_priority));
@@ -995,21 +981,5 @@ rt_uint16_t rt_critical_level(void)
 #endif /* RT_USING_SMP */
 }
 RTM_EXPORT(rt_critical_level);
-
-/**
- * @brief get priority weight of specific cpu
- * 
- */
-rt_uint32_t get_priority_weight(int core_id){
-    rt_uint32_t priority_weight = 0;
-    struct rt_cpu* cpu = rt_cpu_index(core_id);
-    for(int i=0;i<RT_THREAD_PRIORITY_MAX;i++){
-        for(rt_list_t* thread_list = &cpu->priority_table[i];
-            thread_list->next!=&cpu->priority_table[i];
-            thread_list=thread_list->next)
-            priority_weight+=i;
-    }
-    return priority_weight;
-}
 
 /**@}*/

@@ -187,7 +187,7 @@ static rt_err_t _thread_init(struct rt_thread *thread,
 
 #ifdef RT_USING_SMP
     /* not bind on any cpu */
-    thread->bind_cpu = get_lowest_load_cpu();
+    thread->bind_cpu = get_thread_distribute_cpu(thread);
     thread->oncpu = RT_CPU_DETACHED;
 
     /* lock init */
@@ -950,31 +950,48 @@ rt_thread_t rt_thread_find(char *name)
 
 RTM_EXPORT(rt_thread_find);
 
-rt_uint32_t get_lowest_load_cpu(void)
+rt_uint32_t get_thread_distribute_cpu(rt_thread_t dst_thread)
 {
-    // 根据负载情况绑定cpu
-    float min_usage=999;
-    rt_uint32_t dst_cpuid=0;
+    rt_uint32_t free_cpus = 0;
+    rt_uint32_t low_priority_cpus=0;
+    rt_uint32_t all_cpus=0;
+
+    // 生成候选池
     for(int i=0;i<RT_CPUS_NR;i++){
-        float cur_usage = get_cpu_usage(i);
-        if(cur_usage<min_usage){
-            min_usage = cur_usage;
-            dst_cpuid = i;
-        }
+        if(rt_cpu_index(i)->current_priority>RT_THREAD_PRIORITY_MAX-5)
+            free_cpus |= (1<<i);
+        if(rt_cpu_index(i)->current_priority>dst_thread->current_priority)
+            low_priority_cpus |= (1<<i);
+        all_cpus |= (1<<i);
     }
-    //如果cpu都满载，则根据任务优先权重判断最容易得到调度的cpu
-    if(min_usage>=99){
-       rt_uint32_t priority_weight=0xffffffff;
-       for(int i=0;i<RT_CPUS_NR;i++){
-            rt_uint32_t cur_weight = get_priority_weight(i);
-            if(cur_weight<priority_weight){
-                priority_weight = cur_weight;
+
+    rt_kprintf("free:%d\n",free_cpus);
+    rt_kprintf("low prio:%d\n",low_priority_cpus);
+    rt_kprintf("thread name:%s\n", dst_thread->name);
+    if(free_cpus)
+        return get_lowest_usage_cpu(free_cpus);
+    else if(low_priority_cpus)
+        return get_lowest_usage_cpu(low_priority_cpus);
+    else
+        return get_lowest_usage_cpu(all_cpus);
+}
+
+// 从候选池中选出利用率最低的CPU
+rt_uint32_t get_lowest_usage_cpu(rt_uint32_t candidate_cpus){
+    rt_uint32_t dst_cpuid=0;
+    float min_usage=RT_UINT8_MAX;
+    for(int i=0;i<RT_CPUS_NR;i++){
+        if(candidate_cpus&(1<<i)){
+            float cur_cpu_usage = get_cpu_usage(i);
+            if(cur_cpu_usage<min_usage){
+                min_usage = cur_cpu_usage;
                 dst_cpuid = i;
             }
         }
     }
     return dst_cpuid;
 }
+
     
 
 /**@}*/

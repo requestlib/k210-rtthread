@@ -84,7 +84,7 @@ void rt_tick_increase(void)
 
 #ifdef RT_CALCULATE_CPU_USAGE
     
-    if(rt_cpu_self()->recent_total_ticks<5*RT_TICK_PER_SECOND){
+    if(rt_cpu_self()->recent_total_ticks<RT_CALCULATE_CPU_USAGE_TICK){
         rt_cpu_self()->recent_total_ticks ++;
         if(thread->current_priority >= RT_THREAD_PRIORITY_MAX-5)rt_cpu_self()->idle_ticks ++;
     }

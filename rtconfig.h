@@ -248,5 +248,6 @@
 
 /* additional function by liweiran*/
 #define RT_CALCULATE_CPU_USAGE
+#define RT_CALCULATE_CPU_USAGE_TICK 5000
 
 #endif
