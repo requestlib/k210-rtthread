@@ -69,6 +69,27 @@ void test1(){
     // 核0持续处理任务 核1空闲
     int core = current_coreid();
     rt_kprintf("Core %d Hello world \n", core);
+    if(core==0){
+        tid1 = rt_thread_create("thread1", thread_entry, &para1, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
+        if(tid1 != RT_NULL){
+            rt_thread_startup(tid1);
+        }
+    }else{
+        tid_monitor = rt_thread_create("monitor", moniter_thread_entry, RT_NULL, THREAD_STACK_SIZE*2, 5, THREAD_TIMESLICE);
+        if(tid_monitor != RT_NULL)
+            tid_monitor->bind_cpu = 0;
+            rt_thread_startup(tid_monitor);
+        rt_thread_delay(3000);
+        tid1 = rt_thread_create("thread2", thread_entry, &para2, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
+        if(tid1 != RT_NULL){
+            rt_thread_startup(tid1);
+        }
+        rt_thread_delay(3000);
+        tid1 = rt_thread_create("thread3", thread_entry, &para2, THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
+        if(tid1 != RT_NULL){
+            rt_thread_startup(tid1);
+        }
+    }
 }
 
 int main()
